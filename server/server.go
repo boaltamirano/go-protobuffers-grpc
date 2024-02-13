@@ -9,7 +9,8 @@ import (
 )
 
 type Server struct {
-	repo repository.Repository
+	repo                                        repository.Repository //
+	studentpb.UnimplementedStudentServiceServer                       // Este import define que la struct server tentra todas las propiedades de studentpb.UnimplementedStudentServiceServer
 }
 
 // Constructor de del struct
