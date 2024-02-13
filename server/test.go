@@ -134,7 +134,7 @@ func (s *TestServer) GetStudentsPerTest(req *testpb.GetStudentsPerTestRequest, s
 		}
 		err := stream.Send(student)
 
-		time.Sleep(2 * time.Second)
+		time.Sleep(2 * time.Second) // optional
 
 		if err != nil {
 			return err
