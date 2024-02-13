@@ -8,6 +8,7 @@ package testpb
 
 import (
 	context "context"
+	studentpb "github.com/boaltamirano/go-protobuffers-grpc/studentpb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,9 +20,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TestService_GetTest_FullMethodName      = "/test.TestService/GetTest"
-	TestService_SetTest_FullMethodName      = "/test.TestService/SetTest"
-	TestService_SetQuestions_FullMethodName = "/test.TestService/SetQuestions"
+	TestService_GetTest_FullMethodName            = "/test.TestService/GetTest"
+	TestService_SetTest_FullMethodName            = "/test.TestService/SetTest"
+	TestService_SetQuestions_FullMethodName       = "/test.TestService/SetQuestions"
+	TestService_EnrollmentStudents_FullMethodName = "/test.TestService/EnrollmentStudents"
+	TestService_GetStudentsPerTest_FullMethodName = "/test.TestService/GetStudentsPerTest"
 )
 
 // TestServiceClient is the client API for TestService service.
@@ -32,6 +35,9 @@ type TestServiceClient interface {
 	SetTest(ctx context.Context, in *Test, opts ...grpc.CallOption) (*SetTestResponse, error)
 	// Defino que rpc SetQuestions reciba un stream de data desde el cliente de tipo question y responda una respuesta de tipo SetQuestionResponse
 	SetQuestions(ctx context.Context, opts ...grpc.CallOption) (TestService_SetQuestionsClient, error)
+	// Servicio de entollStudent
+	EnrollmentStudents(ctx context.Context, opts ...grpc.CallOption) (TestService_EnrollmentStudentsClient, error)
+	GetStudentsPerTest(ctx context.Context, in *GetStudentsPerTestRequest, opts ...grpc.CallOption) (TestService_GetStudentsPerTestClient, error)
 }
 
 type testServiceClient struct {
@@ -94,6 +100,72 @@ func (x *testServiceSetQuestionsClient) CloseAndRecv() (*SetQuestionResponse, er
 	return m, nil
 }
 
+func (c *testServiceClient) EnrollmentStudents(ctx context.Context, opts ...grpc.CallOption) (TestService_EnrollmentStudentsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TestService_ServiceDesc.Streams[1], TestService_EnrollmentStudents_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &testServiceEnrollmentStudentsClient{stream}
+	return x, nil
+}
+
+type TestService_EnrollmentStudentsClient interface {
+	Send(*EnrollmentRequest) error
+	CloseAndRecv() (*SetQuestionResponse, error)
+	grpc.ClientStream
+}
+
+type testServiceEnrollmentStudentsClient struct {
+	grpc.ClientStream
+}
+
+func (x *testServiceEnrollmentStudentsClient) Send(m *EnrollmentRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *testServiceEnrollmentStudentsClient) CloseAndRecv() (*SetQuestionResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetQuestionResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *testServiceClient) GetStudentsPerTest(ctx context.Context, in *GetStudentsPerTestRequest, opts ...grpc.CallOption) (TestService_GetStudentsPerTestClient, error) {
+	stream, err := c.cc.NewStream(ctx, &TestService_ServiceDesc.Streams[2], TestService_GetStudentsPerTest_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &testServiceGetStudentsPerTestClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type TestService_GetStudentsPerTestClient interface {
+	Recv() (*studentpb.Student, error)
+	grpc.ClientStream
+}
+
+type testServiceGetStudentsPerTestClient struct {
+	grpc.ClientStream
+}
+
+func (x *testServiceGetStudentsPerTestClient) Recv() (*studentpb.Student, error) {
+	m := new(studentpb.Student)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // TestServiceServer is the server API for TestService service.
 // All implementations must embed UnimplementedTestServiceServer
 // for forward compatibility
@@ -102,6 +174,9 @@ type TestServiceServer interface {
 	SetTest(context.Context, *Test) (*SetTestResponse, error)
 	// Defino que rpc SetQuestions reciba un stream de data desde el cliente de tipo question y responda una respuesta de tipo SetQuestionResponse
 	SetQuestions(TestService_SetQuestionsServer) error
+	// Servicio de entollStudent
+	EnrollmentStudents(TestService_EnrollmentStudentsServer) error
+	GetStudentsPerTest(*GetStudentsPerTestRequest, TestService_GetStudentsPerTestServer) error
 	mustEmbedUnimplementedTestServiceServer()
 }
 
@@ -117,6 +192,12 @@ func (UnimplementedTestServiceServer) SetTest(context.Context, *Test) (*SetTestR
 }
 func (UnimplementedTestServiceServer) SetQuestions(TestService_SetQuestionsServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetQuestions not implemented")
+}
+func (UnimplementedTestServiceServer) EnrollmentStudents(TestService_EnrollmentStudentsServer) error {
+	return status.Errorf(codes.Unimplemented, "method EnrollmentStudents not implemented")
+}
+func (UnimplementedTestServiceServer) GetStudentsPerTest(*GetStudentsPerTestRequest, TestService_GetStudentsPerTestServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetStudentsPerTest not implemented")
 }
 func (UnimplementedTestServiceServer) mustEmbedUnimplementedTestServiceServer() {}
 
@@ -193,6 +274,53 @@ func (x *testServiceSetQuestionsServer) Recv() (*Question, error) {
 	return m, nil
 }
 
+func _TestService_EnrollmentStudents_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(TestServiceServer).EnrollmentStudents(&testServiceEnrollmentStudentsServer{stream})
+}
+
+type TestService_EnrollmentStudentsServer interface {
+	SendAndClose(*SetQuestionResponse) error
+	Recv() (*EnrollmentRequest, error)
+	grpc.ServerStream
+}
+
+type testServiceEnrollmentStudentsServer struct {
+	grpc.ServerStream
+}
+
+func (x *testServiceEnrollmentStudentsServer) SendAndClose(m *SetQuestionResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *testServiceEnrollmentStudentsServer) Recv() (*EnrollmentRequest, error) {
+	m := new(EnrollmentRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _TestService_GetStudentsPerTest_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetStudentsPerTestRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(TestServiceServer).GetStudentsPerTest(m, &testServiceGetStudentsPerTestServer{stream})
+}
+
+type TestService_GetStudentsPerTestServer interface {
+	Send(*studentpb.Student) error
+	grpc.ServerStream
+}
+
+type testServiceGetStudentsPerTestServer struct {
+	grpc.ServerStream
+}
+
+func (x *testServiceGetStudentsPerTestServer) Send(m *studentpb.Student) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // TestService_ServiceDesc is the grpc.ServiceDesc for TestService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -214,6 +342,16 @@ var TestService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SetQuestions",
 			Handler:       _TestService_SetQuestions_Handler,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "EnrollmentStudents",
+			Handler:       _TestService_EnrollmentStudents_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetStudentsPerTest",
+			Handler:       _TestService_GetStudentsPerTest_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "testpb/test.proto",

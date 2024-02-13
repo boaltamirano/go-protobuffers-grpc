@@ -1,8 +1,10 @@
 syntax = "proto3";
 
+import "studentpb/student.proto";
+
 package test; // package a nivel del archivo proto
 
-option go_package = "github.com/boaltamirano/go-protobuffers-grpc;testpb"; // definicion de package a nivel del archivo go que va a crear el proto
+option go_package = "github.com/boaltamirano/go-protobuffers-grpc/testpb"; // definicion de package a nivel del archivo go que va a crear el proto
 
 message Test {
     string id = 1;
@@ -29,10 +31,24 @@ message SetQuestionResponse {
     bool ok = 1;
 }
 
+// Enrollment Student
+message EnrollmentRequest {
+    string student_id = 1;
+    string test_id = 2;
+}
+
+message GetStudentsPerTestRequest {
+    string test_id = 1;
+}
+
 // servicio de test
 service TestService {
     rpc GetTest(GetTestRequest) returns (Test);
     rpc SetTest(Test) returns (SetTestResponse);
     // Defino que rpc SetQuestions reciba un stream de data desde el cliente de tipo question y responda una respuesta de tipo SetQuestionResponse
     rpc SetQuestions(stream Question) returns (SetQuestionResponse);
+
+    // Servicio de entollStudent
+    rpc EnrollmentStudents(stream EnrollmentRequest) returns (SetQuestionResponse);
+    rpc GetStudentsPerTest(GetStudentsPerTestRequest) returns (stream student.Student);
 }
