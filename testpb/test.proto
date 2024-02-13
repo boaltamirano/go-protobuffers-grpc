@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package test; // package a nivel del archivo proto
+
+option go_package = "github.com/boaltamirano/go-protobuffers-grpc;testpb"; // definicion de package a nivel del archivo go que va a crear el proto
+
+message Test {
+    string id = 1;
+    string name = 2;
+}
+
+message GetTestRequest {
+    string id = 1;
+}
+
+message SetTestResponse {
+    string id = 1;
+    string name = 2;
+}
+
+// servicio de test
+
+service TestService {
+    rpc GetTest(GetTestRequest) returns (Test);
+    rpc SetTest(Test) returns (SetTestResponse);
+}
