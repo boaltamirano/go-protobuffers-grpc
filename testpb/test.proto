@@ -9,6 +9,13 @@ message Test {
     string name = 2;
 }
 
+message Question {
+    string id = 1;
+    string answer = 2;
+    string question = 3;
+    string test_id = 4;
+}
+
 message GetTestRequest {
     string id = 1;
 }
@@ -18,9 +25,14 @@ message SetTestResponse {
     string name = 2;
 }
 
-// servicio de test
+message SetQuestionResponse {
+    bool ok = 1;
+}
 
+// servicio de test
 service TestService {
     rpc GetTest(GetTestRequest) returns (Test);
     rpc SetTest(Test) returns (SetTestResponse);
+    // Defino que rpc SetQuestions reciba un stream de data desde el cliente de tipo question y responda una respuesta de tipo SetQuestionResponse
+    rpc SetQuestions(stream Question) returns (SetQuestionResponse);
 }
