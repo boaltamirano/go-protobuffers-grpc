@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repo, err := database.NewPostgresRepository("postgres://postgres:postgres@localhost:54321/postgres?ssl=disable")
+	repo, err := database.NewPostgresRepository("postgres://postgres:postgres@localhost:54321/postgres?sslmode=disable")
 
 	server := server.NewStudentServe(repo)
 
@@ -32,7 +32,7 @@ func main() {
 	s := grpc.NewServer()
 	studentpb.RegisterStudentServiceServer(s, server) // Definimos un server de student service server
 
-	//Agregamos reflection para proeer a los clientes metadata y poder usar lo que se envia desde postman ejemplo
+	//Agregamos reflection para proder autocompletar la metadata desde el cleinte postman
 	reflection.Register(s)
 
 	// Levantamos el server
