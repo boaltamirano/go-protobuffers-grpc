@@ -21,6 +21,9 @@ type Repository interface {
 	//************************** ENROLLMENT MODELS ******************************************//
 	SetEnrollment(ctx context.Context, enrollment *models.Enrollment) error
 	GetStudentsPerTest(ctx context.Context, testId string) ([]*models.Student, error)
+
+	//************************** BIDIRECTIONAL Stream ******************************************//
+	GetQuestionsPerTest(ctx context.Context, testId string) ([]*models.Question, error)
 }
 
 // ************************** REPOSITORY IMPLEMENTATION ******************************************//
@@ -61,4 +64,9 @@ func SetEnrollment(ctx context.Context, enrollment *models.Enrollment) error {
 
 func GetStudentsPerTest(ctx context.Context, testId string) ([]*models.Student, error) {
 	return implementation.GetStudentsPerTest(ctx, testId)
+}
+
+// ************************** BIDIRECTIONAL Stream ******************************************//
+func GetQuestionsPerTest(ctx context.Context, testId string) ([]*models.Question, error) {
+	return implementation.GetQuestionsPerTest(ctx, testId)
 }
